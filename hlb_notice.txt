@@ -1,0 +1,7 @@
+
+1. 限IP访问 ControllBase 变量 ipLimitSwitch = true
+	登录数据库 Login_server_list 表中的status 设置为1 表示维护中, 
+	登录数据库 Login_server_config 表中配置ip白名单
+	
+2. 
+	
