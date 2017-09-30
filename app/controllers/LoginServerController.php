@@ -15,7 +15,7 @@ class LoginServerController extends ControllerBase{
      * ```
      */
     public function getServerListAction() {
-        debug('getServerListAction');
+        //debug('getServerListAction');
         
         $serverList = (new LoginServerList)->dicGetAll();
         $data['server_list'] = keepFields($serverList, ['id', 'area_name', 'name', 'status', 'is_new', 'game_server_host', 'net_server_host', 'default_enter', 'maintain_notice']);
@@ -44,39 +44,6 @@ class LoginServerController extends ControllerBase{
         exit;
     }
 
-
-
-    /**
-     * login_server/login
-     */
-    public function loginanysdkAction(){
-        require APP_PATH . '/app/lib/anysdk/AnySDK.config.php';
-        require APP_PATH . '/app/lib/anysdk/AnySDK.Sdk.class.php';
-        $login_params = $_REQUEST;
-        $anysdk = new Sdk_AnySDK();
-        $response = $anysdk->loginForward($login_params);
-        // 登录验证成功
-        if ($anysdk->getLoginStatus()) {
-            // 获取登录结果的一些字段
-            $channelId = $anysdk->getLoginChannel();
-            $uid = $anysdk->getLoginUid();
-            $user_sdk = $anysdk->getLoginUserSdk();
-            $plugin_id = $anysdk->getLoginPluginId();
-            $server_id = $anysdk->getLoginServerId();
-            $data = $anysdk->getLoginData();   // 获取登录验证渠道返回的原始内容
-            // 获取登录结果字段值示例结束
-
-            $channelName   = @(new AndroidChannel)->dicGetOneByChannelId($channelId)['channel_name'];
-            $uuid          = $uid . '_' . $channelName;
-            $udata['list'] = (new PlayerServerList)->getByUuid($uuid);
-            $udata['last'] = (new PlayerLastServer)->getByUuid($uuid);
-            $anysdk->setLoginExt($udata);
-            $response = json_encode($anysdk->getLoginResponse());
-
-        }
-        $response = is_scalar($response) ? $response : json_encode($response);
-        echo $response;
-    }
 
     /**
      *  登录验证
@@ -140,6 +107,42 @@ class LoginServerController extends ControllerBase{
         }
         exit;
     }
+
+    /**
+     * login_server/login
+     */
+    public function loginAnySDKAction(){
+        require APP_PATH . '/plugin/anysdk/AnySDK.config.php';
+        require APP_PATH . '/plugin/anysdk/AnySDK.Sdk.class.php';
+        $login_params = $_REQUEST;
+        $anysdk = new Sdk_AnySDK();
+        $response = $anysdk->loginForward($login_params);
+        // 登录验证成功
+        if ($anysdk->getLoginStatus()) {
+            // 获取登录结果的一些字段
+            $channelId = $anysdk->getLoginChannel();
+            $uid = $anysdk->getLoginUid();
+            $user_sdk = $anysdk->getLoginUserSdk();
+            $plugin_id = $anysdk->getLoginPluginId();
+            $server_id = $anysdk->getLoginServerId();
+            $data = $anysdk->getLoginData();   // 获取登录验证渠道返回的原始内容
+            // 获取登录结果字段值示例结束
+
+            $channelName   = @(new AndroidChannel)->dicGetOneByChannelId($channelId)['channel_name'];
+            $uuid          = $uid . '_' . $channelName;
+
+            //将如下参数发送给用户
+            // $udata['list'] = (new PlayerServerList)->getByUuid($uuid);
+            // $udata['last'] = (new PlayerLastServer)->getByUuid($uuid);
+            // $anysdk->setLoginExt($udata);
+
+            $response = json_encode($anysdk->getLoginResponse());
+            debug($response, true);
+        }
+        $response = is_scalar($response) ? $response : json_encode($response);
+        echo $response;
+    }
+
 
     /**
      * 获取玩家服务器列表 & 最后一次登录服务器
